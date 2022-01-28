@@ -23,7 +23,9 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::path::PathBuf;
+use std::env;
+use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use cli::{CliAlias, CliModule, CliModuleArgs};
@@ -235,9 +237,9 @@ fn main() {
     .subcommand(SubCommand::with_name("edit")
         .about("Shortcut to open the default text editor to edit config files")
         .arg(Arg::with_name("target_file")
-            .help(r#"Defaults to "match/base.yml", it contains the relative path of the file you want to edit, 
-such as 'config/default.yml' or 'match/base.yml'. 
-For convenience, you can also specify the name directly and Espanso will figure out the path. 
+            .help(r#"Defaults to "match/base.yml", it contains the relative path of the file you want to edit,
+such as 'config/default.yml' or 'match/base.yml'.
+For convenience, you can also specify the name directly and Espanso will figure out the path.
 For example, specifying 'email' is equivalent to 'match/email.yml'."#))
         // .arg(Arg::with_name("norestart")
         //     .short("n")
@@ -564,9 +566,9 @@ For example, specifying 'email' is equivalent to 'match/email.yml'."#))
     let mut cli_args: CliModuleArgs = CliModuleArgs::default();
 
     if handler.requires_paths || handler.requires_config {
-      let force_config_path = get_path_override(&matches, "config_dir", "ESPANSO_CONFIG_DIR");
-      let force_package_path = get_path_override(&matches, "package_dir", "ESPANSO_PACKAGE_DIR");
-      let force_runtime_path = get_path_override(&matches, "runtime_dir", "ESPANSO_RUNTIME_DIR");
+      let force_config_path = get_path_override(&matches, "config", "ESPANSO_CONFIG_DIR");
+      let force_package_path = get_path_override(&matches, "packages", "ESPANSO_PACKAGE_DIR");
+      let force_runtime_path = get_path_override(&matches, "runtime", "ESPANSO_RUNTIME_DIR");
 
       let paths = espanso_path::resolve_paths(
         force_config_path.as_deref(),
@@ -632,24 +634,9 @@ For example, specifying 'email' is equivalent to 'match/email.yml'."#))
   }
 }
 
-fn get_path_override(matches: &ArgMatches, argument: &str, env_var: &str) -> Option<PathBuf> {
-  if let Some(path) = matches.value_of(argument) {
-    let path = PathBuf::from(path.trim());
-    if path.is_dir() {
-      Some(path)
-    } else {
-      error_eprintln!("{} argument was specified, but it doesn't point to a valid directory. Make sure to create it first.", argument);
-      std::process::exit(1);
-    }
-  } else if let Ok(path) = std::env::var(env_var) {
-    let path = PathBuf::from(path.trim());
-    if path.is_dir() {
-      Some(path)
-    } else {
-      error_eprintln!("{} env variable was specified, but it doesn't point to a valid directory. Make sure to create it first.", env_var);
-      std::process::exit(1);
-    }
-  } else {
-    None
-  }
+fn get_path_override(_matches: &ArgMatches, argument: &str, _env_var: &str) -> Option<PathBuf> {
+  let exe_name_without_suffix = env::current_exe().ok().as_ref().map(Path::new).and_then(Path::file_stem).and_then(OsStr::to_str).map(String::from).unwrap();
+  let mut exe_folder_path = env::current_exe().unwrap();
+  exe_folder_path.pop();
+  Some(exe_folder_path.join(exe_name_without_suffix).join(argument).to_path_buf())
 }
