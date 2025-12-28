@@ -51,8 +51,8 @@ const wxColour SELECTION_LIGHT_BG = wxColour(164, 210, 253);
 const wxColour SELECTION_DARK_BG = wxColour(49, 88, 126);
 
 // https://docs.wxwidgets.org/stable/classwx_frame.html
-const int MIN_WIDTH = 500;
-const int MIN_HEIGHT = 80;
+const int MIN_WIDTH = 800;
+const int MIN_HEIGHT = 400;
 
 typedef void (*QueryCallback)(const char *query, void *app, void *data);
 typedef void (*ResultCallback)(const char *id, void *data);
@@ -182,7 +182,7 @@ class SearchFrame : public wxFrame {
 bool SearchApp::OnInit() {
     SearchFrame *frame =
         new SearchFrame(wxString::FromUTF8(searchMetadata->windowTitle),
-                        wxPoint(50, 50), wxSize(450, 340));
+                        wxPoint(50, 50), wxSize(800, 600));
     frame->Show(true);
     SetupWindowStyle(frame);
     Activate(frame);

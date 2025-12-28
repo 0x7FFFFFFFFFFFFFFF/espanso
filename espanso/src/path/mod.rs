@@ -95,8 +95,9 @@ pub fn resolve_paths(
         } else {
             get_default_runtime_path()
         };
-        info!("creating runtime directory in {}", runtime_dir.display());
-        create_dir_all(&runtime_dir).expect("unable to create runtime directory");
+        info!("runtime directory would be at {}", runtime_dir.display());
+        // Disabled to prevent folder creation
+        // create_dir_all(&runtime_dir).expect("unable to create runtime directory");
         runtime_dir
     };
 
@@ -114,8 +115,9 @@ pub fn resolve_paths(
             get_default_packages_path(&config_dir)
         };
         
-        info!("creating packages directory in {}", packages_dir.display());
-        create_dir_all(&packages_dir).expect("unable to create packages directory");
+        info!("packages directory would be at {}", packages_dir.display());
+        // Disabled to prevent folder creation
+        // create_dir_all(&packages_dir).expect("unable to create packages directory");
         packages_dir
     };
 

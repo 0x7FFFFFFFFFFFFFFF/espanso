@@ -67,8 +67,8 @@ fn daemon_main(args: CliModuleArgs) -> i32 {
         .expect("missing paths_overrides in daemon main");
 
     // Make sure only one instance of the daemon is running
-    let lock_file = acquire_daemon_lock(&paths.runtime);
-    if lock_file.is_none() {
+    let _lock_file = acquire_daemon_lock(&paths.runtime);
+    if _lock_file.is_none() {
         error!("daemon is already running!");
         return DAEMON_ALREADY_RUNNING;
     }

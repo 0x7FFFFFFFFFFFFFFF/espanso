@@ -299,7 +299,7 @@ impl Config for ResolvedConfig {
     }
 
     fn show_notifications(&self) -> bool {
-        self.parsed.show_notifications.unwrap_or(true)
+        self.parsed.show_notifications.unwrap_or(false)
     }
 
     fn secure_input_notification(&self) -> bool {

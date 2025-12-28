@@ -36,6 +36,11 @@ impl Lock {
     }
 
     fn acquire(runtime_dir: &Path, name: &str) -> Option<Lock> {
+        // Create runtime directory if it doesn't exist (needed for lock file)
+        if !runtime_dir.exists() {
+            std::fs::create_dir_all(runtime_dir).ok()?;
+        }
+        
         let lock_file_path = runtime_dir.join(format!("{name}.lock"));
         let lock_file = OpenOptions::new()
             .read(true)
