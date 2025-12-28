@@ -48,15 +48,21 @@ fn edit_main(args: CliModuleArgs) -> i32 {
     let paths = args.paths.expect("missing paths argument");
     let cli_args = args.cli_args.expect("missing cli_args");
 
-    assert!(
-        paths.config.is_dir(),
-        "config directory does not exist in path: {}",
-        paths.config.display()
-    );
-
-    // Determine which is the file to edit
-    let target_file = cli_args.value_of("target_file");
-    let target_path = determine_target_path(&paths.config, target_file);
+    // In portable mode, paths.config might be a file, not a directory
+    let target_path = if paths.config.is_file() {
+        // Single-file mode: edit the config file directly
+        paths.config.clone()
+    } else {
+        // Directory mode: determine target file as usual
+        assert!(
+            paths.config.is_dir(),
+            "config directory does not exist in path: {}",
+            paths.config.display()
+        );
+        
+        let target_file = cli_args.value_of("target_file");
+        determine_target_path(&paths.config, target_file)
+    };
 
     println!(
         "Editing file: {}",
