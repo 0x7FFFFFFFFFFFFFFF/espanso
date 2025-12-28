@@ -22,7 +22,7 @@ use log::error;
 
 use crate::gui::{SearchItem, SearchUI};
 
-const MAX_LABEL_LEN: usize = 100;
+const MAX_LABEL_LEN: usize = 400;
 
 pub trait MatchProvider<'a> {
     fn get_matches(&self, ids: &[i32]) -> Vec<MatchSummary<'a>>;

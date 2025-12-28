@@ -30,6 +30,7 @@ const WX_WIDGETS_BUILD_OUT_DIR_ENV_NAME: &str = "WX_WIDGETS_BUILD_OUT_DIR";
 
 #[cfg(target_os = "windows")]
 fn build_native() {
+    println!("cargo:rerun-if-changed=src");
     use std::process::Command;
 
     let project_dir =
@@ -161,6 +162,7 @@ fn build_native() {
 
 #[cfg(target_os = "macos")]
 fn build_native() {
+    println!("cargo:rerun-if-changed=src");
     use std::process::Command;
 
     let project_dir =
@@ -450,6 +452,7 @@ fn macos_link_search_path() -> Option<String> {
 
 #[cfg(target_os = "linux")]
 fn build_native() {
+    println!("cargo:rerun-if-changed=src");
     // Make sure wxWidgets is installed
     // Depending on the installation package, the 'wx-config' command might be available under
     // different names, so we need to check them all.
