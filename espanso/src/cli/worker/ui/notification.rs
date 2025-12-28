@@ -37,7 +37,8 @@ impl<'a> NotificationManager<'a> {
     }
 
     pub fn notify_start(&self) {
-        self.notify("Espanso is running!");
+        // Disabled as requested
+        // self.notify("kj is running!");
     }
 
     pub fn notify_config_reloaded(&self, is_manual_restart: bool) {
@@ -45,7 +46,7 @@ impl<'a> NotificationManager<'a> {
             self.notify("Configuration reloaded!");
         } else {
             self.notify(
-        "Configuration reloaded! Espanso automatically loads new changes as soon as you save them.",
+        "Configuration reloaded! kj automatically loads new changes as soon as you save them.",
       );
         }
     }
@@ -63,9 +64,9 @@ impl espanso_engine::process::NotificationManager for NotificationManager<'_> {
         }
 
         if enabled {
-            self.notify("Espanso enabled!");
+            self.notify("kj enabled!");
         } else {
-            self.notify("Espanso disabled!");
+            self.notify("kj disabled!");
         }
     }
 

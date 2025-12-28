@@ -35,13 +35,13 @@ impl<'a> TextUIHandlerAdapter<'a> {
 
 impl TextUIHandler for TextUIHandlerAdapter<'_> {
     fn show_text(&self, title: &str, text: &str) -> anyhow::Result<()> {
-        self.text_ui.show_text(title, text)?;
+        self.ui.show_text(title, text)?;
         Ok(())
     }
 
     fn show_logs(&self) -> anyhow::Result<()> {
-        self.text_ui
-            .show_file("Espanso Logs", &self.paths.runtime.join("espanso.log"))?;
+        self.ui
+            .show_file("kj Logs", &self.paths.runtime.join(self.log_filename))?;
         Ok(())
     }
 }

@@ -109,10 +109,11 @@ pub fn create_match_show_active_app_info() -> BuiltInMatch {
 
 pub fn create_match_show_logs() -> BuiltInMatch {
     BuiltInMatch {
-        id: generate_next_builtin_id(),
-        label: "Show Espanso's logs",
+        id: "espanso_debug_logs",
+        label: "Show kj's logs",
         triggers: vec!["#log#".to_string()],
         action: |_| EventType::ShowLogs,
         ..Default::default()
     }
 }
+```

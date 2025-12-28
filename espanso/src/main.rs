@@ -141,7 +141,7 @@ fn main() {
         .subcommand(SubCommand::with_name("toggle")
             .about("Enable/Disable expansions."))
         .subcommand(SubCommand::with_name("search")
-            .about("Open the Espanso's search bar."))
+            .about("Open the kj's search bar."))
     )
     .subcommand(SubCommand::with_name("edit")
         .about("Shortcut to open the default text editor to edit config files")
@@ -287,35 +287,38 @@ For example, specifying 'email' is equivalent to 'match/email.yml'."#))
     )
     .subcommand(
       SubCommand::with_name("service")
-        .subcommand(SubCommand::with_name("register").about("Register espanso as a system service"))
+        .subcommand(SubCommand::with_name("register").about("Register kj as a system service"))
         .subcommand(
-          SubCommand::with_name("unregister").about("Unregister espanso from system services"),
+          SubCommand::with_name("unregister").about("Unregister kj from system services"),
         )
         .subcommand(
           SubCommand::with_name("check")
-            .about("Check if espanso is registered as a system service"),
+            .about("Check if kj is registered as a system service"),
         )
         .subcommand(SubCommand::with_name("start")
-        .about("Start espanso as a service")
-        .arg(
-            Arg::with_name("unmanaged")
-                .long("unmanaged")
-                .required(false)
-                .takes_value(false)
-                .help("Run espanso as an unmanaged service (avoid system manager)"),
-        ))
+            .about("Start kj as a service")
+            .arg(
+                Arg::with_name("unmanaged")
+                    .long("unmanaged")
+                    .required(false)
+                    .takes_value(false)
+                    .help("Run kj as an unmanaged service (avoid system manager)"),
+            )
+        )
         .subcommand(SubCommand::with_name("restart")
-        .about("Restart the espanso service")
-        .arg(
-            Arg::with_name("unmanaged")
-                .long("unmanaged")
-                .required(false)
-                .takes_value(false)
-        ))
-        .subcommand(SubCommand::with_name("stop").about("Stop espanso service"))
+            .about("Restart the kj service")
+            .arg(
+                Arg::with_name("unmanaged")
+                    .long("unmanaged")
+                    .required(false)
+                    .takes_value(false)
+            )
+        )
+        .subcommand(SubCommand::with_name("stop").about("Stop kj service"))
         .subcommand(
-        SubCommand::with_name("status").about("Check if the espanso daemon is running or not."))
-        .about("A collection of commands to manage the Espanso service (for example, enabling auto-start on system boot)."),
+            SubCommand::with_name("status").about("Check if the kj daemon is running or not.")
+        )
+        .about("A collection of commands to manage the kj service (for example, enabling auto-start on system boot)."),
     )
     .subcommand(SubCommand::with_name("match")
         .about("List and execute matches from the CLI")
@@ -407,14 +410,14 @@ SubCommand::with_name("install")
         .long("git")
         .required(false)
         .takes_value(true)
-        .help("Git repository from which espanso should install the package."),
+        .help("Git repository from which kj should install the package."),
     )
     .arg(
       Arg::with_name("git-branch")
         .long("git-branch")
         .required(false)
         .takes_value(true)
-        .help("Force espanso to search for the package on a specific git branch"),
+        .help("Force kj to search for the package on a specific git branch"),
     )
     .arg(
       Arg::with_name("force")
@@ -428,14 +431,14 @@ SubCommand::with_name("install")
         .long("refresh-index")
         .required(false)
         .takes_value(false)
-        .help("Request a fresh copy of the Espanso Hub package index instead of using the cached version.")
+        .help("Request a fresh copy of the kj Hub package index instead of using the cached version.")
     )
     .arg(
       Arg::with_name("use-native-git")
         .long("use-native-git")
         .required(false)
         .takes_value(false)
-        .help("If specified, espanso will use the 'git' command instead of trying direct methods."),
+        .help("If specified, kj will use the 'git' command instead of trying direct methods."),
     ))
         .subcommand(
           SubCommand::with_name("uninstall")
@@ -530,7 +533,7 @@ SubCommand::with_name("install")
         }
 
         // When started from a Linux app image, override the default handler with the launcher
-        // to start espanso when launching it directly
+        // to start kj when launching it directly
         if std::env::var_os("APPIMAGE").is_some() {
             handler = CLI_HANDLERS.iter().find(|cli| cli.subcommand == "launcher");
         }
@@ -575,7 +578,7 @@ SubCommand::with_name("install")
 
         // If explicitly requested, we show the Dock icon on macOS
         // We need to enable this selectively, otherwise we would end up with multiple
-        // dock icons due to the multi-process nature of espanso.
+        // dock icons due to the multi-process nature of kj.
         #[cfg(target_os = "macos")]
         if handler.show_in_dock {
             espanso_mac_utils::convert_to_foreground_app();
@@ -659,7 +662,7 @@ pub fn get_log_file_name() -> String {
         .ok()
         .and_then(|p| p.file_stem().map(|s| s.to_string_lossy().into_owned()))
         .map(|name| format!("{name}.log"))
-        .unwrap_or_else(|| "espanso.log".to_string())
+        .unwrap_or_else(|| "kj.log".to_string())
 }
 
 fn get_path_override(matches: &ArgMatches, argument: &str, env_var: &str) -> Option<PathBuf> {
@@ -668,6 +671,9 @@ fn get_path_override(matches: &ArgMatches, argument: &str, env_var: &str) -> Opt
         if path.is_dir() {
             Some(path)
         } else {
+            if is_root() {
+                error_eprintln!("kj is being run as root, but this can create unwanted side-effects. Please run it as a normal user.");
+            }
             error_eprintln!("{} argument was specified, but it doesn't point to a valid directory. Make sure to create it first.", argument);
             std::process::exit(1);
         }
