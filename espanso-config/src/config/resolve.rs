@@ -291,7 +291,7 @@ impl Config for ResolvedConfig {
     }
 
     fn undo_backspace(&self) -> bool {
-        self.parsed.undo_backspace.unwrap_or(true)
+        self.parsed.undo_backspace.unwrap_or(false)
     }
 
     fn show_icon(&self) -> bool {
