@@ -166,17 +166,22 @@ fn determine_target_path(config_path: &Path, target_file: Option<&str>) -> PathB
 }
 
 pub fn open_editor(file_path: &Path) -> bool {
-    // Check if another editor is defined in the environment variables
-    let editor_var = std::env::var_os("EDITOR");
-    let visual_var = std::env::var_os("VISUAL");
-
-    // Prioritize the editors specified by the environment variable, use the default one
-    let editor: String = if let Some(editor_var) = editor_var {
-        editor_var.to_string_lossy().to_string()
-    } else if let Some(visual_var) = visual_var {
-        visual_var.to_string_lossy().to_string()
+    // Priority order: VSCode in PATH, then environment variables, then default editor
+    let editor: String = if Command::new("code").arg("--version").output().is_ok() {
+        // VSCode is available in PATH
+        "code".to_string()
     } else {
-        default_editor()
+        // Check environment variables
+        let editor_var = std::env::var_os("EDITOR");
+        let visual_var = std::env::var_os("VISUAL");
+        
+        if let Some(editor_var) = editor_var {
+            editor_var.to_string_lossy().to_string()
+        } else if let Some(visual_var) = visual_var {
+            visual_var.to_string_lossy().to_string()
+        } else {
+            default_editor()
+        }
     };
 
     // Start the editor and wait for its termination
