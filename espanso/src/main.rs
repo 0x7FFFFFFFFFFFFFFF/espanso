@@ -57,7 +57,7 @@ mod preferences;
 mod util;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-const LOG_FILE_NAME: &str = "espanso.log";
+
 
 static CLI_HANDLERS: LazyLock<Vec<CliModule>> = LazyLock::new(|| {
     vec![
@@ -618,7 +618,7 @@ SubCommand::with_name("install")
             if handler.enable_logs {
                 log_proxy
                     .set_output_file(
-                        &paths.runtime.join(LOG_FILE_NAME),
+                        &paths.logs.join(get_log_file_name()),
                         handler.log_mode == LogMode::Read,
                         handler.log_mode == LogMode::CleanAndAppend,
                     )
@@ -651,9 +651,15 @@ SubCommand::with_name("install")
         // No handler at this point means subcommand was not provided. Could also use clap's
         // `arg_required_else_help`, but that makes it more difficult to handle launching from app
         // bundle on macos, which will not have a subcommand specified.
-        clap_instance.print_help().expect("unable to print help");
-        std::process::exit(1);
     }
+}
+
+pub fn get_log_file_name() -> String {
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.file_stem().map(|s| s.to_string_lossy().into_owned()))
+        .map(|name| format!("{name}.log"))
+        .unwrap_or_else(|| "espanso.log".to_string())
 }
 
 fn get_path_override(matches: &ArgMatches, argument: &str, env_var: &str) -> Option<PathBuf> {

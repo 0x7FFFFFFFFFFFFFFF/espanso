@@ -412,6 +412,10 @@ impl ResolvedConfig {
         })
     }
 
+    pub fn add_match_path(&mut self, path: String) {
+        self.match_paths.push(path);
+    }
+
     #[allow(clippy::cognitive_complexity)]
     fn merge_parsed(child: &mut ParsedConfig, parent: &ParsedConfig) {
         // Override the None fields with the parent's value

@@ -36,6 +36,29 @@ type LoadableConfig = (
 );
 
 pub fn load(base_path: &Path) -> Result<LoadableConfig> {
+    if base_path.is_file() {
+        let (config_store, non_fatal_config_errors) = config::load_from_single_file(base_path)?;
+        let mut root_paths = config_store.get_all_match_paths();
+
+        // In single-file mode, the config file itself is also the match file
+        root_paths.insert(base_path.to_string_lossy().to_string());
+
+        let (match_store, non_fatal_match_errors) =
+            matches::store::load(&root_paths.into_iter().collect::<Vec<String>>());
+            
+        println!("DEBUG: Matches loaded. Count: unknown (need to check store)");
+
+        let mut non_fatal_errors = Vec::new();
+        non_fatal_errors.extend(non_fatal_config_errors);
+        non_fatal_errors.extend(non_fatal_match_errors);
+
+        return Ok((
+            Box::new(config_store),
+            Box::new(match_store),
+            non_fatal_errors,
+        ));
+    }
+
     let config_dir = base_path.join("config");
     if !config_dir.exists() || !config_dir.is_dir() {
         return Err(ConfigError::MissingConfigDir().into());

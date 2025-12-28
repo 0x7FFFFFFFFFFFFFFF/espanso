@@ -28,6 +28,7 @@ use std::{collections::HashSet, path::Path};
 pub struct DefaultConfigStore {
     default: Arc<dyn Config>,
     customs: Vec<Arc<dyn Config>>,
+    extra_matches: HashSet<String>,
 }
 
 impl ConfigStore for DefaultConfigStore {
@@ -56,7 +57,7 @@ impl ConfigStore for DefaultConfigStore {
     }
 
     fn get_all_match_paths(&self) -> HashSet<String> {
-        let mut paths = HashSet::new();
+        let mut paths = self.extra_matches.clone();
 
         paths.extend(self.default().match_paths().iter().cloned());
         for custom in &self.customs {
@@ -128,6 +129,33 @@ impl DefaultConfigStore {
             Self {
                 default: Arc::new(default),
                 customs,
+                extra_matches: HashSet::new(),
+            },
+            non_fatal_errors,
+        ))
+    }
+
+    pub fn load_from_single_file(path: &Path) -> Result<(Self, Vec<NonFatalErrorSet>)> {
+        let mut non_fatal_errors = Vec::new();
+
+        let mut default = match ResolvedConfig::load(path, None) {
+            Ok(config) => config,
+            Err(err) => {
+                non_fatal_errors.push(NonFatalErrorSet::single_error(path, err));
+                // If the single file config fails, we return an error as we have no fallback
+                return Err(ConfigStoreError::MissingDefault().into());
+            }
+        };
+
+        default.add_match_path(path.to_string_lossy().to_string());
+
+        debug!("loaded single-file config at path: {}", path.display());
+
+        Ok((
+            Self {
+                default: Arc::new(default),
+                customs: Vec::new(),
+                extra_matches: vec![path.to_string_lossy().to_string()].into_iter().collect(),
             },
             non_fatal_errors,
         ))

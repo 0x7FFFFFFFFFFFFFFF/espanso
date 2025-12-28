@@ -30,6 +30,12 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = include_str!("./res/config/default.yml
 const DEFAULT_MATCH_FILE_CONTENT: &str = include_str!("./res/config/base.yml");
 
 pub fn populate_default_config(config_dir: &Path) -> Result<()> {
+    // If the config_dir is a file, it means we are using the single-file mode
+    // (e.g. kj.yml next to kj.exe), so we shouldn't attempt to populate the directory
+    if config_dir.is_file() {
+        return Ok(());
+    }
+
     if !config_dir.is_dir() {
         info!(
             "generating base configuration directory in: {}",

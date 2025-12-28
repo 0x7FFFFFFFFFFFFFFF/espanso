@@ -55,8 +55,14 @@ fn watcher_main(config_dir: &Path, debounce_tx: Sender<()>) {
         Watcher::new(tx, Duration::from_millis(WATCHER_NOTIFY_DELAY_MS))
             .expect("unable to create file watcher");
 
+    let mode = if config_dir.is_file() {
+        RecursiveMode::NonRecursive
+    } else {
+        RecursiveMode::Recursive
+    };
+
     watcher
-        .watch(config_dir, RecursiveMode::Recursive)
+        .watch(config_dir, mode)
         .expect("unable to start file watcher");
 
     info!("watching for changes in path: {}", config_dir.display());

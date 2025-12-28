@@ -357,6 +357,10 @@ pub fn load_store(config_dir: &Path) -> Result<(impl ConfigStore, Vec<NonFatalEr
     store::DefaultConfigStore::load(config_dir)
 }
 
+pub fn load_from_single_file(path: &Path) -> Result<(impl ConfigStore, Vec<NonFatalErrorSet>)> {
+    store::DefaultConfigStore::load_from_single_file(path)
+}
+
 #[derive(Error, Debug)]
 pub enum ConfigStoreError {
     #[error("invalid config directory")]

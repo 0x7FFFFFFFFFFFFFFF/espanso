@@ -135,49 +135,8 @@ fn launcher_main(args: CliModuleArgs) -> i32 {
     });
 
     // Only show the wizard if a panel should be displayed
-    let should_launch_daemon = if is_welcome_page_enabled
-        || is_move_bundle_page_enabled
-        || is_auto_start_page_enabled
-        || is_add_path_page_enabled
-        || is_accessibility_page_enabled
-        || is_wrong_edition_page_enabled
-    {
-        espanso_modulo::wizard::show(WizardOptions {
-            version: crate::VERSION.to_string(),
-            is_welcome_page_enabled,
-            is_move_bundle_page_enabled,
-            is_legacy_version_page_enabled,
-            is_wrong_edition_page_enabled,
-            is_migrate_page_enabled,
-            is_auto_start_page_enabled,
-            is_add_path_page_enabled,
-            is_accessibility_page_enabled,
-            window_icon_path: icon_paths
-                .wizard_icon
-                .map(|path| path.to_string_lossy().to_string()),
-            welcome_image_path: icon_paths
-                .logo_no_background
-                .map(|path| path.to_string_lossy().to_string()),
-            accessibility_image_1_path: icon_paths
-                .accessibility_image_1
-                .map(|path| path.to_string_lossy().to_string()),
-            accessibility_image_2_path: icon_paths
-                .accessibility_image_2
-                .map(|path| path.to_string_lossy().to_string()),
-            detected_os: wrong_edition_detected_os,
-            handlers: WizardHandlers {
-                is_legacy_version_running: Some(is_legacy_version_running_handler),
-                backup_and_migrate: Some(backup_and_migrate_handler),
-                auto_start: Some(auto_start_handler),
-                add_to_path: Some(add_to_path_handler),
-                enable_accessibility: Some(enable_accessibility_handler),
-                is_accessibility_enabled: Some(is_accessibility_enabled_handler),
-                on_completed: Some(on_completed_handler),
-            },
-        })
-    } else {
-        true
-    };
+    // Force wizard disabled for simplicity as requested
+    let should_launch_daemon = true;
 
     if let Err(err) = crate::config::populate_default_config(&paths.config) {
         error!("Error populating the config directory: {err:?}");

@@ -33,7 +33,7 @@ pub fn new() -> CliModule {
 
 fn log_main(args: CliModuleArgs) -> i32 {
     let paths = args.paths.expect("missing paths argument");
-    let log_file = paths.runtime.join(crate::LOG_FILE_NAME);
+    let log_file = paths.logs.join(crate::get_log_file_name());
 
     if !log_file.exists() {
         eprintln!("No log file found.");

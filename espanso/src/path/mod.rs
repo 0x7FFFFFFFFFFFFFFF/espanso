@@ -55,6 +55,7 @@ pub struct Paths {
     pub config: PathBuf,
     pub runtime: PathBuf,
     pub packages: PathBuf,
+    pub logs: PathBuf,
 
     pub is_portable_mode: bool,
 }
@@ -64,8 +65,15 @@ pub fn resolve_paths(
     force_package_dir: Option<&Path>,
     force_runtime_dir: Option<&Path>,
 ) -> Paths {
+    println!("DEBUG: resolve_paths called");
     let config_dir = if let Some(config_dir) = force_config_dir {
         config_dir.to_path_buf()
+    } else if let Some(sibling_config) = get_exe_sibling_config_path() {
+        debug!(
+            "detected sibling config file: {}",
+            sibling_config.display()
+        );
+        sibling_config
     } else if let Some(config_dir) = get_config_dir() {
         config_dir
     } else {
@@ -98,10 +106,33 @@ pub fn resolve_paths(
         package_dir
     } else {
         // Create the packages directory if not already present
-        let packages_dir = get_default_packages_path(&config_dir);
+        let packages_dir = if config_dir.is_file() {
+            // In single-file mode, we place packages in the runtime directory
+            // to avoid creating folders next to the executable
+            runtime_dir.join("packages")
+        } else {
+            get_default_packages_path(&config_dir)
+        };
+        
         info!("creating packages directory in {}", packages_dir.display());
         create_dir_all(&packages_dir).expect("unable to create packages directory");
         packages_dir
+    };
+
+    let logs_dir = if let Some(runtime_dir) = force_runtime_dir {
+        // If the runtime dir is forced, we stick with it for logs as well
+        runtime_dir.to_path_buf()
+    } else {
+        #[cfg(target_os = "windows")]
+        {
+            let document_dir = dirs::document_dir().expect("unable to obtain dirs::document_dir()");
+            let logs_dir = document_dir;
+            logs_dir
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            runtime_dir.clone()
+        }
     };
 
     let is_portable_mode =
@@ -111,6 +142,7 @@ pub fn resolve_paths(
         config: config_dir,
         runtime: runtime_dir,
         packages: packages_dir,
+        logs: logs_dir,
         is_portable_mode,
     }
 }
@@ -264,10 +296,8 @@ fn get_default_runtime_dir() -> Option<PathBuf> {
 }
 
 fn get_default_runtime_path() -> PathBuf {
-    // On Windows, use Documents folder for better accessibility
-    // On other platforms, continue using cache directory
     #[cfg(target_os = "windows")]
-    let runtime_dir = dirs::document_dir().expect("unable to obtain dirs::document_dir()");
+    let runtime_dir = dirs::data_local_dir().expect("unable to obtain dirs::data_local_dir()");
     
     #[cfg(not(target_os = "windows"))]
     let runtime_dir = dirs::cache_dir().expect("unable to obtain dirs::cache_dir()");
@@ -358,4 +388,24 @@ fn is_legacy_runtime_dir(path: &Path) -> bool {
     }
 
     false
+}
+
+fn get_exe_sibling_config_path() -> Option<PathBuf> {
+    let espanso_exe_path = std::env::current_exe().ok()?;
+    let exe_dir = espanso_exe_path.parent()?;
+    let exe_name = espanso_exe_path.file_stem()?;
+    
+    // Check for .yml
+    let config_path_yml = exe_dir.join(format!("{}.yml", exe_name.to_string_lossy()));
+    if config_path_yml.is_file() {
+        return Some(config_path_yml);
+    }
+
+    // Check for .yaml
+    let config_path_yaml = exe_dir.join(format!("{}.yaml", exe_name.to_string_lossy()));
+    if config_path_yaml.is_file() {
+        return Some(config_path_yaml);
+    }
+
+    None
 }
