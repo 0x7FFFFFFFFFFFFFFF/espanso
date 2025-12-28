@@ -264,7 +264,14 @@ fn get_default_runtime_dir() -> Option<PathBuf> {
 }
 
 fn get_default_runtime_path() -> PathBuf {
+    // On Windows, use Documents folder for better accessibility
+    // On other platforms, continue using cache directory
+    #[cfg(target_os = "windows")]
+    let runtime_dir = dirs::document_dir().expect("unable to obtain dirs::document_dir()");
+    
+    #[cfg(not(target_os = "windows"))]
     let runtime_dir = dirs::cache_dir().expect("unable to obtain dirs::cache_dir()");
+    
     runtime_dir.join("espanso")
 }
 
