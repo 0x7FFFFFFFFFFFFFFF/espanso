@@ -1,4 +1,4 @@
-# Espanso Portable Fork
+# Espanso Windows Portable Fork
 
 This fork aims to make Espanso portable on Windows.
 
